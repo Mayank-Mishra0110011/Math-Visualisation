@@ -1,6 +1,6 @@
 //             **>>		This is a seperate sketch for now		<<**
 
-var degree, coeff = [], temp = [], x = '', xfield = undefined;
+var degree, coeff = [], temp = [], x = '', xfield = undefined, fout, y = [], eval;
 const reg = /^\d+$/;
 
 function setup() {
@@ -8,6 +8,11 @@ function setup() {
 	degree = createInput();
 	degree.style('width', '50px');
 	degree.position(340, 32);
+	eval = createButton("Plot");
+	eval.position(400, 190);
+	eval.style('width', '50px');
+	eval.mousePressed(plot);
+	eval.hide();
 }
 
 function draw() {
@@ -16,6 +21,7 @@ function draw() {
 	text("Enter the degree of the polynomial : ", 10, 50);
 	if (reg.test(degree.value()) && coeff.length == 0) {
 		definePolynomial(degree.value());
+		eval.show();
 	}
 	else
 	if (degree.value() == '' && coeff.length != 0) {
@@ -24,20 +30,57 @@ function draw() {
 		}
 		xfield.remove();
 		xfield = undefined;
+		flag = false;
 		x = '';
 		for (let i = 0; i < temp.length; i++) {
 			temp[i].remove();
 		}
 		temp = [];
 		coeff = [];
+		y = [];
+		eval.hide();
 	}
 	if (coeff.length > 0) {
 		writeEquation();
 		getX();
 	}
+	if (reg.test(degree.value())) {
+		xyPlane();
+		graph();
+	}
 	if (x != '') {
 		evaluate();
 	}
+}
+
+function plot() {
+	y = [];
+	for (let i = -300; i <= 300; i++) {
+		x = i;
+		evaluate();
+		y.push(fout);
+	}
+	x = '';
+	let yx = [];
+	let low = min(y);
+	let high = max(y);
+	y.forEach(y => {
+		yx.push(map(y, low, high, 300, 600));
+	});
+	y = yx;
+}
+
+function graph() {
+	let tx = 0;
+	y.forEach(y => {
+		point(tx, y);
+		tx++;
+	});
+}
+
+function xyPlane() {
+	line(300 , 300, 300, 600);
+	line(0 , 450, 600, 450);
 }
 
 function getX() {
@@ -59,6 +102,7 @@ function definePolynomial(deg) {
 		let e = createInput();
 		e.style('width', '20px');
 		e.position(x, 90);
+		e.mouseClicked(plot);
 		coeff.push(e);
 		if (i == 2) {
 			let p = createDiv('x<sup></sup>');
@@ -120,6 +164,7 @@ function evaluate() {
 		}
 	}
 	ans += evaluateInput(i);
+	fout = ans;
 	text("Answer : " + ans, 10, 250);
 }
 
